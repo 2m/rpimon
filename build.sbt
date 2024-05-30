@@ -1,5 +1,7 @@
 scalaVersion := "3.3.3"
 
+libraryDependencies += "ch.epfl.lamp" %%% "gears" % "0.2.0"
+
 enablePlugins(ScalaNativePlugin, BindgenPlugin, VcpkgNativePlugin)
 
 import scala.scalanative.build.*
@@ -28,9 +30,12 @@ nativeConfig := {
 }
 
 import bindgen.interface.Binding
-vcpkgDependencies := VcpkgDependencies("paho-mqtt")
-//vcpkgNativeConfig ~= { _.addRenamedLibrary("paho-mqtt", "libpaho-mqtt3a") }
 bindgenBindings := Seq(
-  Binding(vcpkgConfigurator.value.includes("paho-mqtt") / "MQTTClient.h", "libpahomqtt")
-    .withCImports(List("MQTTClient.h"))
+  Binding(baseDirectory.value / "mqttc-amalgam.h", "libmqttc")
+    .withCImports(List("mqtt.h", "mqtt_pal.h"))
+    .withClangFlags(
+      List(
+        "-I" + baseDirectory.value / "mqtt-c" / "include"
+      )
+    )
 )
