@@ -1,0 +1,7 @@
+version: '3.7'
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto:latest
+    command: mosquitto -c /mosquitto-no-auth.conf
+    ports:
+    - "1883:1883"

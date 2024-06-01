@@ -1,0 +1,59 @@
+{
+    "type": "a{sv}",
+    "data": [
+        {
+            "Hostname": {
+                "type": "s",
+                "data": "openmower"
+            },
+            "StaticHostname": {
+                "type": "s",
+                "data": "openmower"
+            },
+            "PrettyHostname": {
+                "type": "s",
+                "data": ""
+            },
+            "IconName": {
+                "type": "s",
+                "data": "computer"
+            },
+            "Chassis": {
+                "type": "s",
+                "data": ""
+            },
+            "Deployment": {
+                "type": "s",
+                "data": ""
+            },
+            "Location": {
+                "type": "s",
+                "data": ""
+            },
+            "KernelName": {
+                "type": "s",
+                "data": "Linux"
+            },
+            "KernelRelease": {
+                "type": "s",
+                "data": "6.1.21-v8+"
+            },
+            "KernelVersion": {
+                "type": "s",
+                "data": "#1642 SMP PREEMPT Mon Apr  3 17:24:16"
+            },
+            "OperatingSystemPrettyName": {
+                "type": "s",
+                "data": "Debian GNU/Linux 11 (bullseye)"
+            },
+            "OperatingSystemCPEName": {
+                "type": "s",
+                "data": ""
+            },
+            "HomeURL": {
+                "type": "s",
+                "data": "https://www.debian.org/"
+            }
+        }
+    ]
+}

@@ -1,125 +1,78 @@
-import java.net.Socket
+/*
+ * Copyright 2024 github.com/2m/rpimon/contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import scala.compiletime.ops.double
+package rpimon
+
 import scala.concurrent.duration.*
-import scala.scalanative.libc.string
-import scala.scalanative.posix.fcntl.*
-import scala.scalanative.posix.fcntlOps.*
-import scala.scalanative.posix.netdb.*
-import scala.scalanative.posix.netdbOps.*
-import scala.scalanative.posix.sys.socket.*
-import scala.scalanative.posix.unistd.*
-import scala.scalanative.runtime.*
-import scala.scalanative.unsigned.UByte
-import scala.scalanative.unsigned.UInt
-import scala.scalanative.unsigned.UShort
 
-import gears.async.*
-import gears.async.default.given
-import libmqttc.aliases.mqtt_pal_socket_handle
-import libmqttc.aliases.uint8_t
-import libmqttc.all.*
-import libmqttc.enumerations.MQTTConnectFlags
-import libmqttc.enumerations.MQTTErrors.MQTT_OK
-import libmqttc.structs.mqtt_client
-import scalanative.libc.*
-import scalanative.unsafe.*
-import scalanative.unsigned.*
+import cats.effect.ExitCode
+import cats.effect.IO
+import cats.effect.IOApp
+import cats.effect.kernel.Async
+import cats.effect.kernel.Sync
+import cats.effect.kernel.Temporal
+import cats.effect.std.Console
+import cats.syntax.all.*
+import com.comcast.ip4s.Host
+import com.comcast.ip4s.Port
+import fs2.Stream
+import fs2.io.net.Network
+import fs2.io.process.Processes
+import neotype.*
+import net.sigusr.mqtt.api.*
+import net.sigusr.mqtt.api.ConnectionState.*
+import org.legogroup.woof.{*, given}
 
-def open_nb_socket(addr: CString, port: CString): CInt =
-  Zone:
-    val hints = alloc[addrinfo]()
-    hints.ai_family = AF_UNSPEC
-    hints.ai_socktype = SOCK_STREAM
+object RpiMon extends IOApp:
 
-    val servinfo = alloc[Ptr[addrinfo]]()
-    val rv = getaddrinfo(addr, port, hints, servinfo)
-    if rv != 0 then
-      println(s"getaddrinfo: ${gai_strerror(rv)}")
-      return -1
+  private def ticks[F[_]: Temporal](using conf: Config): Stream[F, Unit] =
+    Stream.sleep[F](conf.tick.unwrap).repeat
 
-    // open the first possible socket
-    var sockfd = -1
-    var p = !servinfo
-    var continue = true
-    while p != null && continue do
-      sockfd = socket(p.ai_family, p.ai_socktype, p.ai_protocol)
-      println(sockfd)
-      if sockfd != -1 then
-        val rv = connect(sockfd, p.ai_addr, p.ai_addrlen)
-        println(rv)
-        if rv == -1 then
-          close(sockfd)
-          sockfd = -1
-        else continue = false
+  private def onConnectionState[F[_]: Sync: Logger]: ConnectionState => F[Unit] = {
+    case Error(e) => Sync[F].raiseError(e)
+    case Connecting(nextDelay, retriesSoFar) =>
+      Logger[F].info(s"Connecting to MQTT broker, next delay: ${nextDelay.toCoarsest}, retries so far: $retriesSoFar")
+    case Connected => Logger[F].info("Connected to MQTT broker")
+    case _         => Sync[F].pure(())
+  }
 
-      if continue then p = p.ai_next
+  def streams[F[_]: Processes: Logger: Console: Network: Async: Proc]()(using conf: Config) =
+    val transportConfig = TransportConfig[F](conf.mqttHost.unwrap, conf.mqttPort.unwrap)
+    val sessionConfig = SessionConfig("rpimon")
 
-    freeaddrinfo(!servinfo)
+    given Dbus[F] = ProcessDbus[F]
+    val sensors = sensorStream[F]()
 
-    // if sockfd != -1 then fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL, 0) | O_NONBLOCK)
+    Session[F](transportConfig, sessionConfig).use: session =>
+      val sessionStatus = session.state.discrete.evalMap(onConnectionState[F])
 
-    sockfd
+      val publisher = ticks
+        .flatMap(_ => sensors)
+        .evalMap: s =>
+          session.publish(s.configTopic, s.config.noSpaces.getBytes("UTF-8").toVector) *>
+            session.publish(s.stateTopic, s.state.noSpaces.getBytes("UTF-8").toVector)
 
-def publish_callback(unused: Ptr[Ptr[Byte]], published: Ptr[mqtt_response_publish]) =
-  println(s"published")
+      Logger[F].info(s"rpimon will report every ${conf.tick} to ${conf.mqttHost}:${conf.mqttPort}") *>
+        (publisher, sessionStatus).pure[F]
 
-def mqttSync(client: Ptr[mqtt_client])(using Async.Spawn) =
-  Future:
-    while true do
-      println("syncing")
-      mqtt_sync(client)
-      println("after sync")
-      AsyncOperations.sleep(500.millis)
-      println("after sleep")
-
-@main def hello(): Unit =
-  Async.blocking:
-    Zone:
-      val sockfd = open_nb_socket(c"localhost", c"1883")
-      println(s"socket: $sockfd")
-
-      val client = alloc[mqtt_client](1)
-      val sendbuf = alloc[UByte](2048)
-      val recvbuf = alloc[UByte](2048)
-
-      val callback =
-        CFuncPtr2.fromScalaFunction(publish_callback)
-
-      mqtt_init(
-        client,
-        sockfd.asInstanceOf[mqtt_pal_socket_handle],
-        sendbuf,
-        Intrinsics.unsignedOf(2048),
-        recvbuf,
-        Intrinsics.unsignedOf(2048),
-        callback
-      )
-      println("init success")
-
-      mqtt_connect(
-        client,
-        c"scala-native",
-        null,
-        null,
-        0.toUByte,
-        null,
-        null,
-        2.toUByte,
-        400.toUShort
-      )
-      println("connect success")
-
-      mqttSync(client)
-
-      if (!client).error != MQTT_OK then println(s"connect failed: ${fromCString(mqtt_error_str((!client).error))}")
-      println("connect success")
-      val msg = c"Hello, world!"
-      /* mqtt_publish(
-        client,
-        c"topic",
-        msg,
-        string.strlen(msg),
-        0.toUByte
-      )*/
-      println("publish success")
+  override def run(args: List[String]): IO[ExitCode] =
+    given Proc[IO] = Fs2Proc[IO]
+    for
+      given Logger[IO] <- DefaultLogger.makeIo(consoleOutput)
+      given Config <- config.load[IO]
+      (publisher, sessionStatus) <- streams[IO]()
+      _ <- IO.race(publisher.compile.drain, sessionStatus.compile.drain)
+    yield ExitCode.Success

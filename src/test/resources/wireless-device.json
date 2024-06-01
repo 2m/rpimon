@@ -1,0 +1,57 @@
+{
+    "type": "a{sv}",
+    "data": [
+        {
+            "HwAddress": {
+                "type": "s",
+                "data": "00:C0:CA:B4:69:D7"
+            },
+            "PermHwAddress": {
+                "type": "s",
+                "data": "00:C0:CA:B4:69:D7"
+            },
+            "Mode": {
+                "type": "u",
+                "data": 2
+            },
+            "Bitrate": {
+                "type": "u",
+                "data": 292500
+            },
+            "AccessPoints": {
+                "type": "ao",
+                "data": [
+                    "/org/freedesktop/NetworkManager/AccessPoint/16214",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16386",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16387",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16388",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16389",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16390",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16391",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16392",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16393",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16394",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16395",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16396",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16402",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16403",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16413",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16415",
+                    "/org/freedesktop/NetworkManager/AccessPoint/16424"
+                ]
+            },
+            "ActiveAccessPoint": {
+                "type": "o",
+                "data": "/org/freedesktop/NetworkManager/AccessPoint/16395"
+            },
+            "WirelessCapabilities": {
+                "type": "u",
+                "data": 14335
+            },
+            "LastScan": {
+                "type": "x",
+                "data": 368106973
+            }
+        }
+    ]
+}

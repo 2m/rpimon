@@ -1,41 +1,41 @@
-scalaVersion := "3.3.3"
+scalaVersion := "3.4.2"
+scalafmtOnCompile := true
 
-libraryDependencies += "ch.epfl.lamp" %%% "gears" % "0.2.0"
-
-enablePlugins(ScalaNativePlugin, BindgenPlugin, VcpkgNativePlugin)
-
-import scala.scalanative.build.*
-nativeConfig ~= { c =>
-  c.withLTO(LTO.none) // thin
-    .withMode(Mode.debug) // releaseFast
-    .withGC(GC.immix) // commix
-}
-
-import com.indoorvivants.detective.Platform
-import com.indoorvivants.detective.Platform.OS.*
-nativeConfig := {
-  val conf = nativeConfig.value
-  val arch64 =
-    if (Platform.arch == Platform.Arch.Arm && Platform.bits == Platform.Bits.x64)
-      List("-arch", "arm64")
-    else Nil
-
-  conf
-    .withLinkingOptions(
-      conf.linkingOptions ++ arch64
-    )
-    .withCompileOptions(
-      conf.compileOptions ++ arch64
-    )
-}
-
-import bindgen.interface.Binding
-bindgenBindings := Seq(
-  Binding(baseDirectory.value / "mqttc-amalgam.h", "libmqttc")
-    .withCImports(List("mqtt.h", "mqtt_pal.h"))
-    .withClangFlags(
-      List(
-        "-I" + baseDirectory.value / "mqtt-c" / "include"
-      )
-    )
+libraryDependencies ++= Seq(
+  "co.fs2"                 %% "fs2-io"            % "3.10.2",
+  "io.circe"               %% "circe-core"        % "0.14.7",
+  "io.circe"               %% "circe-parser"      % "0.14.7",
+  "io.github.kitlangton"   %% "neotype"           % "0.3.0",
+  "io.github.kitlangton"   %% "neotype-circe"     % "0.3.0",
+  "net.sigusr"             %% "fs2-mqtt"          % "1.0.1",
+  "is.cir"                 %% "ciris"             % "3.6.0",
+  "org.legogroup"          %% "woof-core"         % "0.7.0",
+  "org.scalameta"          %% "munit"             % "1.0.0" % Test,
+  "org.typelevel"          %% "munit-cats-effect" % "2.0.0" % Test,
+  "com.softwaremill.diffx" %% "diffx-munit"       % "0.9.0" % Test,
+  compilerPlugin("com.github.ghik" % "zerowaste" % "0.2.21" cross CrossVersion.full)
 )
+
+Compile / run / fork := true
+
+enablePlugins(BuildInfoPlugin)
+buildInfoKeys := Seq[BuildInfoKey](
+  version,
+  organizationName,
+  BuildInfoKey.map(homepage) { case (k, v) => k -> v.fold("")(_.toString) },
+  Test / resourceDirectory
+)
+buildInfoPackage := "rpimon"
+
+assembly / assemblyOutputPath := target.value / "rpimon.jar"
+
+enablePlugins(AutomateHeaderPlugin)
+organization := "rpimon"
+organizationName := "github.com/2m/rpimon/contributors"
+startYear := Some(2024)
+licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
+homepage := Some(url("https://github.com/2m/rpimon"))
+
+enablePlugins(SnapshotsPlugin)
+snapshotsPackageName := buildInfoPackage.value
+snapshotsIntegrations += SnapshotIntegration.MUnit

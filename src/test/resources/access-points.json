@@ -1,0 +1,22 @@
+{
+    "type": "ao",
+    "data": [
+        [
+            "/org/freedesktop/NetworkManager/AccessPoint/12746",
+            "/org/freedesktop/NetworkManager/AccessPoint/12812",
+            "/org/freedesktop/NetworkManager/AccessPoint/12813",
+            "/org/freedesktop/NetworkManager/AccessPoint/12814",
+            "/org/freedesktop/NetworkManager/AccessPoint/12815",
+            "/org/freedesktop/NetworkManager/AccessPoint/12816",
+            "/org/freedesktop/NetworkManager/AccessPoint/12817",
+            "/org/freedesktop/NetworkManager/AccessPoint/12818",
+            "/org/freedesktop/NetworkManager/AccessPoint/12819",
+            "/org/freedesktop/NetworkManager/AccessPoint/12820",
+            "/org/freedesktop/NetworkManager/AccessPoint/12821",
+            "/org/freedesktop/NetworkManager/AccessPoint/12822",
+            "/org/freedesktop/NetworkManager/AccessPoint/12823",
+            "/org/freedesktop/NetworkManager/AccessPoint/12824",
+            "/org/freedesktop/NetworkManager/AccessPoint/12825"
+        ]
+    ]
+}

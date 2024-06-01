@@ -1,0 +1,18 @@
+{
+    "unique_id" : "openmower_wifi_bssid",
+    "name" : "WiFi BSSID",
+    "icon" : "mdi:router-wireless",
+    "state_class" : "measurement",
+    "unit_of_measurement" : "m",
+    "state_topic" : "rpimon/openmower/wifi_bssid",
+    "device" : {
+        "identifiers" : [
+            "openmower"
+        ],
+        "manufacturer" : "github.com/2m/rpimon/contributors",
+        "model" : "rpimon 0.0.0",
+        "name" : "openmower",
+        "sw_version" : "Debian GNU/Linux 11 (bullseye) / Linux 6.1.21-v8+",
+        "configuration_url" : "https://github.com/2m/rpimon"
+    }
+}
