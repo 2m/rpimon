@@ -1,0 +1,31 @@
+[Unit]
+Description=rpimon
+Documentation=man:podman-generate-systemd(1)
+Wants=network.target
+After=network-online.target NetworkManager.service
+StartLimitInterval=120
+StartLimitBurst=10
+
+[Service]
+Type=forking
+Restart=always
+RestartSec=15s
+TimeoutStartSec=1h
+TimeoutStopSec=120s
+
+ExecStartPre=/bin/rm -f %t/container-rpimon.pid %t/container-rpimon.ctr-id
+
+ExecStart=/usr/bin/podman run \
+  --conmon-pidfile %t/container-rpimon.pid --cidfile %t/container-rpimon.ctr-id \
+  --cgroups=no-conmon \
+  --replace --detach --tty \
+  -v /var/run/dbus:/var/run/dbus \
+  --name rpimon \
+  ghcr.io/2m/rpimon:main
+
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/container-map-tiles.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore --force --cidfile %t/container-map-tiles.ctr-id
+PIDFile=%t/container-rpimon.pid
+
+[Install]
+WantedBy=multi-user.target default.target
