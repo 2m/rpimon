@@ -16,6 +16,8 @@
 
 package rpimon
 
+import io.circe.syntax.*
+
 class SensorsSuite extends munit.FunSuite with SnapshotAssertions with Util:
   import Config.*
   import Dbus.*
@@ -39,12 +41,10 @@ class SensorsSuite extends munit.FunSuite with SnapshotAssertions with Util:
     val s = summon[Sensors[ActiveAccessPoint]]
     val sensors = s.mkSensors(activeAp)
     assertEquals(sensors.size, 3)
-    // 00:11:22:33:44:55 -> 73588229205
-    // https://www.vultr.com/resources/mac-converter/
-    assertEquals(sensors.map(_.state.toString), List("55", "5745", "73588229205"))
+    assertEquals(sensors.map(_.stateValue), List(55.asJson, 5745.asJson, "ON".asJson))
 
   snapshot.test("ap sensors"): assertSnapshot =>
     val s = summon[Sensors[AccessPoint]]
     val sensors = s.mkSensors(ap)
     assertEquals(sensors.size, 1)
-    assertSnapshot(sensors.head.config.spaces4)
+    assertSnapshot(sensors.head.configValue.spaces4)

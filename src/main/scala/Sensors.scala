@@ -16,8 +16,6 @@
 
 package rpimon
 
-import java.lang.Long as JLong
-
 import scala.util.chaining.*
 
 import neotype.*
@@ -37,25 +35,22 @@ given Sensors[Dbus.ActiveAccessPoint] with
       Id("wifi_strength"),
       Name("WiFi Strength"),
       Icon.Wifi,
-      StateClass.Measurement,
-      Units.Percent,
-      active.ap.strength.unwrap.toLong
+      State.Measurement(Units.Percent, active.ap.strength.unwrap)
     ),
     Sensor(
       Id("wifi_freq"),
       Name("WiFi Channel Frequency"),
       Icon.Sine,
-      StateClass.Measurement,
-      Units.MHz,
-      active.ap.frequency.unwrap.toLong
+      State.Measurement(Units.MHz, active.ap.frequency.unwrap)
     ),
     Sensor(
       Id("wifi_bssid"),
-      Name("WiFi BSSID"),
+      // we want to export this sensor from HA to prometheus,
+      // but HA only exports integer sensor values. We set name to bssid
+      // so the value is exported as `friendly_name` label in prometheus.
+      Name(active.ap.mac.unwrap),
       Icon.Ap,
-      StateClass.Measurement,
-      Units.Meter, // need to set to some unit, so HA -> prometheus exporter picks it up
-      active.ap.mac.toLong
+      State.Binary(true)
     )
   )
 
@@ -67,12 +62,8 @@ given Sensors[Dbus.AccessPoint] with
       Id(s"ap_strength_${ap.mac.toHex}"),
       Name(s"AP ${ap.mac} Strength"),
       Icon.Wifi,
-      StateClass.Measurement,
-      Units.Percent,
-      ap.strength.unwrap.toLong
+      State.Measurement(Units.Percent, ap.strength.unwrap)
     )
   )
 
-extension (mac: Dbus.Mac)
-  def toHex = mac.unwrap.replace(":", "")
-  def toLong: Long = toHex.pipe(s => JLong.parseLong(s, 16))
+extension (mac: Dbus.Mac) def toHex = mac.unwrap.replace(":", "")

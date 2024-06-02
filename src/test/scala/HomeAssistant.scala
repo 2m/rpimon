@@ -34,33 +34,42 @@ class HomeAssistantSuite extends munit.FunSuite with SnapshotAssertions with Uti
     Id("wifi_bssid"),
     Name("WiFi BSSID"),
     Icon.Ap,
-    StateClass.Measurement,
-    Units.Meter,
-    123L
+    State.Measurement(Units.Meter, 123)
+  )
+
+  def binarySensor(using Dbus.System) = Sensor(
+    Id("wifi_on"),
+    Name("WiFi On"),
+    Icon.Ap,
+    State.Binary(true)
   )
 
   snapshot.test("sensor config"): assertSnapshot =>
-    assertSnapshot(sensor.config.spaces4)
+    assertSnapshot(sensor.configValue.spaces4)
+
+  snapshot.test("binary sensor config"): assertSnapshot =>
+    assertSnapshot(binarySensor.configValue.spaces4)
 
   test("sensor config topic"):
     assertEquals(sensor.configTopic, "homeassistant/sensor/rpimon/openmower_wifi_bssid/config")
+    assertEquals(binarySensor.configTopic, "homeassistant/binary_sensor/rpimon/openmower_wifi_on/config")
 
   test("sensor state"):
-    assertEquals(sensor.state, 123.asJson)
+    assertEquals(sensor.stateValue, 123.asJson)
+    assertEquals(binarySensor.stateValue, "ON".asJson)
 
   test("sensor state topic"):
     assertEquals(sensor.stateTopic, "rpimon/openmower/wifi_bssid")
+    assertEquals(binarySensor.stateTopic, "rpimon/openmower/wifi_on")
 
   test("sensor object_id generated from id"):
     val sensor = Sensor(
       Id("wifi_freq"),
       Name("WiFi Channel Frequency"),
       Icon.Sine,
-      StateClass.Measurement,
-      Units.MHz,
-      123L
+      State.Measurement(Units.MHz, 123)
     )
-    assertEquals(sensor.config.hcursor.downField("object_id").as[String], Right("wifi_freq"))
+    assertEquals(sensor.configValue.hcursor.downField("object_id").as[String], Right("wifi_freq"))
 
   test("sanitized hostname"):
     given System = Dbus.System(
@@ -69,4 +78,4 @@ class HomeAssistantSuite extends munit.FunSuite with SnapshotAssertions with Uti
       KernelVersion("6.1.21-v8+"),
       OperatingSystem("Debian GNU/Linux 11 (bullseye)")
     )
-    assertEquals(sensor.config.hcursor.downField("unique_id").as[String], Right("openmower_local_wifi_bssid"))
+    assertEquals(sensor.configValue.hcursor.downField("unique_id").as[String], Right("openmower_local_wifi_bssid"))

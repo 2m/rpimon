@@ -38,11 +38,24 @@ object HomeAssistant:
   object Icon:
     given Encoder[Icon] = Encoder[String].contramap(_.value)
 
-  enum StateClass:
-    case Measurement
+  enum State:
+    case Measurement(units: Units, value: Int)
+    case Binary(value: Boolean)
 
-  object StateClass:
-    given Encoder[StateClass] = Encoder[String].contramap(_.productPrefix.toLowerCase)
+  extension (state: State)
+    def config = state match
+      case State.Measurement(units, _) =>
+        Json.obj(
+          "state_class" -> "measurement".asJson,
+          "unit_of_measurement" -> units.asJson
+        )
+      case State.Binary(_) => Json.obj()
+    def value = state match
+      case State.Measurement(_, value) => value.asJson
+      case State.Binary(value)         => (if value then "ON" else "OFF").asJson
+    def component = state match
+      case State.Measurement(_, _) => "sensor"
+      case State.Binary(_)         => "binary_sensor"
 
   enum Units(val value: String):
     case Percent extends Units("%")
@@ -52,23 +65,19 @@ object HomeAssistant:
   object Units:
     given Encoder[Units] = Encoder[String].contramap(_.value)
 
-  class Sensor(id: Id, name: Name, icon: Icon, stateClass: StateClass, units: Units, value: Long)(using
-      sys: Dbus.System,
-      conf: Config
-  ):
-    def config = Json
+  class Sensor(id: Id, name: Name, icon: Icon, state: State)(using sys: Dbus.System, conf: Config):
+    def configValue = Json
       .obj(
         "unique_id" -> s"${sanitizedHostname}_$id".asJson,
         "object_id" -> id.asJson,
         "name" -> name.asJson,
         "icon" -> icon.asJson,
-        "state_class" -> stateClass.asJson,
-        "unit_of_measurement" -> units.asJson,
         "state_topic" -> stateTopic.asJson,
         "force_update" -> true.asJson,
         "expire_after" -> (5 * conf.tick.unwrap).toSeconds.asJson,
         "device" -> deviceConfig
       )
+      .deepMerge(state.config)
 
     private def deviceConfig = Json.obj(
       "identifiers" -> Json.arr(sys.hostname.asJson),
@@ -79,9 +88,9 @@ object HomeAssistant:
       "configuration_url" -> BuildInfo.homepage.asJson
     )
 
-    def configTopic = s"homeassistant/sensor/${conf.topicPrefix}/${sanitizedHostname}_$id/config"
+    def configTopic = s"homeassistant/${state.component}/${conf.topicPrefix}/${sanitizedHostname}_$id/config"
 
-    def state = value.asJson
+    def stateValue = state.value
     def stateTopic = s"${conf.topicPrefix}/${sanitizedHostname}/$id"
 
     private def sanitizedHostname = sys.hostname.unwrap.replaceAll("[^a-zA-Z0-9-]", "_")

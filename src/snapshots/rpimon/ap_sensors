@@ -1,10 +1,10 @@
 {
+    "state_class" : "measurement",
+    "unit_of_measurement" : "%",
     "unique_id" : "openmower_ap_strength_001122334455",
     "object_id" : "ap_strength_001122334455",
     "name" : "AP 00:11:22:33:44:55 Strength",
     "icon" : "mdi:wifi",
-    "state_class" : "measurement",
-    "unit_of_measurement" : "%",
     "state_topic" : "rpimon/openmower/ap_strength_001122334455",
     "force_update" : true,
     "expire_after" : 10,
