@@ -1,6 +1,6 @@
 {
     "unique_id" : "openmower_wifi_on",
-    "object_id" : "wifi_on",
+    "object_id" : "openmower_wifi_on",
     "name" : "WiFi On",
     "icon" : "mdi:router-wireless",
     "state_topic" : "rpimon/openmower/wifi_on",

@@ -70,7 +70,7 @@ class HomeAssistantSuite extends munit.FunSuite with SnapshotAssertions with Uti
       Icon.Sine,
       State.Measurement(Units.MHz, 123)
     )
-    assertEquals(sensor.configValue.hcursor.downField("object_id").as[String], Right("wifi_freq"))
+    assertEquals(sensor.configValue.hcursor.downField("object_id").as[String], Right("openmower_wifi_freq"))
 
   test("sanitized hostname"):
     given System = Dbus.System(

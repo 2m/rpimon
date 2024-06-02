@@ -2,7 +2,7 @@
     "state_class" : "measurement",
     "unit_of_measurement" : "m",
     "unique_id" : "openmower_wifi_bssid",
-    "object_id" : "wifi_bssid",
+    "object_id" : "openmower_wifi_bssid",
     "name" : "WiFi BSSID",
     "icon" : "mdi:router-wireless",
     "state_topic" : "rpimon/openmower/wifi_bssid",

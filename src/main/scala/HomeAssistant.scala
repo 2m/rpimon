@@ -75,7 +75,7 @@ object HomeAssistant:
     def configValue = Json
       .obj(
         "unique_id" -> s"${sanitizedHostname}_$id".asJson,
-        "object_id" -> id.asJson,
+        "object_id" -> s"${sanitizedHostname}_$id".asJson,
         "name" -> name.asJson,
         "icon" -> icon.asJson,
         "state_topic" -> stateTopic.asJson,
