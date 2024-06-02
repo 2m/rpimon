@@ -19,6 +19,7 @@ ExecStart=/usr/bin/podman run \
   --conmon-pidfile %t/container-rpimon.pid --cidfile %t/container-rpimon.ctr-id \
   --cgroups=no-conmon \
   --replace --detach --tty \
+  --privileged \
   --net=host \
   -v /var/run/dbus:/var/run/dbus \
   --name rpimon \

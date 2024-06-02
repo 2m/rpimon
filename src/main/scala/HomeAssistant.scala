@@ -34,6 +34,10 @@ object HomeAssistant:
     case Wifi extends Icon("mdi:wifi")
     case Sine extends Icon("mdi:sine-wave")
     case Ap extends Icon("mdi:router-wireless")
+    case Speedometer extends Icon("mdi:speedometer")
+    case Thermometer extends Icon("mdi:thermometer")
+    case Memory extends Icon("mdi:memory")
+    case Calendar extends Icon("mdi:calendar")
 
   object Icon:
     given Encoder[Icon] = Encoder[String].contramap(_.value)
@@ -61,11 +65,13 @@ object HomeAssistant:
     case Percent extends Units("%")
     case MHz extends Units("MHz")
     case Meter extends Units("m")
+    case Degrees extends Units("°C")
+    case Days extends Units("days")
 
   object Units:
     given Encoder[Units] = Encoder[String].contramap(_.value)
 
-  class Sensor(id: Id, name: Name, icon: Icon, state: State)(using sys: Dbus.System, conf: Config):
+  class Sensor(id: Id, name: Name, icon: Icon, state: State)(using sys: Dbus.System, conf: Config, hw: Stats.Hardware):
     def configValue = Json
       .obj(
         "unique_id" -> s"${sanitizedHostname}_$id".asJson,
@@ -85,6 +91,7 @@ object HomeAssistant:
       "model" -> s"rpimon ${conf.version}".asJson,
       "name" -> sanitizedHostname.asJson,
       "sw_version" -> s"${sys.operatingSystem} / ${sys.kernelName} ${sys.kernelVersion}".asJson,
+      "hw_version" -> hw.asJson,
       "configuration_url" -> BuildInfo.homepage.asJson
     )
 

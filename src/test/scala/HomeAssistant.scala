@@ -20,6 +20,7 @@ class HomeAssistantSuite extends munit.FunSuite with SnapshotAssertions with Uti
   import Config.*
   import Dbus.*
   import HomeAssistant.*
+  import Stats.*
 
   given System = Dbus.System(
     Hostname("openmower"),
@@ -27,6 +28,8 @@ class HomeAssistantSuite extends munit.FunSuite with SnapshotAssertions with Uti
     KernelVersion("6.1.21-v8+"),
     OperatingSystem("Debian GNU/Linux 11 (bullseye)")
   )
+
+  given Hardware = Stats.Hardware("RPi 4 Model B Rev 1.2")
 
   def sensor(using Dbus.System) = Sensor(
     Id("wifi_bssid"),

@@ -27,7 +27,7 @@ trait Util:
   import Config.*
 
   def file(filename: String) =
-    Files.readString(BuildInfo.test_resourceDirectory.toPath().resolve(filename + ".json"))
+    Files.readString(BuildInfo.test_resourceDirectory.toPath().resolve(filename))
 
   given Config =
     Config(

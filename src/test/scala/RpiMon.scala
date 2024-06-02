@@ -25,6 +25,7 @@ import org.legogroup.woof.Logger
 object RpiMonTest extends IOApp with Util:
   override def run(args: List[String]): IO[ExitCode] =
     given Proc[IO] = ProcessDbusSuite.mockProc[IO](ProcessDbusSuite.responses)
+    given FileSystem[IO] = FileStatsSuite.mockFileSystem[IO](FileStatsSuite.responses)
     for
       given Logger[IO] <- DefaultLogger.makeIo(consoleOutput)
       (publisher, sessionStatus) <- RpiMon.streams[IO]()

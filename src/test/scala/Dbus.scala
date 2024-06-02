@@ -24,7 +24,7 @@ class DbusParserSuite extends munit.FunSuite with DiffxAssertions with Util:
   import Dbus.*
 
   test("parse operating system"):
-    val json = file("system")
+    val json = file("system.json")
     decode[Dbus.System](json) match
       case Right(os) =>
         assertEqual(os.hostname.toString, Dbus.Hostname("openmower").toString)
@@ -34,14 +34,14 @@ class DbusParserSuite extends munit.FunSuite with DiffxAssertions with Util:
       case Left(error) => fail(s"Failed to parse operating system: $error")
 
   test("parse device path"):
-    val json = file("device")
+    val json = file("device.json")
     decode[Dbus.DevicePath](json) match
       case Right(devicePath) =>
         assertEqual(devicePath.toString, Dbus.DevicePath("/org/freedesktop/NetworkManager/Devices/3").toString)
       case Left(error) => fail(s"Failed to parse device path: $error")
 
   test("parse wireless device"):
-    val json = file("wireless-device")
+    val json = file("wireless-device.json")
     decode[Dbus.WirelessDevice](json) match
       case Right(wirelessDevice) =>
         assertEqual(wirelessDevice.accessPoints.size, 17)
@@ -61,7 +61,7 @@ class DbusParserSuite extends munit.FunSuite with DiffxAssertions with Util:
       case Left(error) => fail(s"Failed to parse access point paths: $error")
 
   test("parse access point"):
-    val json = file("access-point")
+    val json = file("access-point.json")
     decode[Dbus.AccessPoint](json) match
       case Right(accessPoint) =>
         assertEqual(accessPoint.ssid.toString, Dbus.Ssid("Ginkunai").toString)

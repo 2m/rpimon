@@ -14,6 +14,7 @@
         "model" : "rpimon 0.0.0",
         "name" : "openmower",
         "sw_version" : "Debian GNU/Linux 11 (bullseye) / Linux 6.1.21-v8+",
+        "hw_version" : "RPi 4 Model B Rev 1.2",
         "configuration_url" : "https://github.com/2m/rpimon"
     }
 }

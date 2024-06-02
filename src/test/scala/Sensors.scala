@@ -19,6 +19,7 @@ package rpimon
 class SensorsSuite extends munit.FunSuite with SnapshotAssertions with Util:
   import Config.*
   import Dbus.*
+  import Stats.*
 
   given System = Dbus.System(
     Hostname("openmower"),
@@ -26,6 +27,8 @@ class SensorsSuite extends munit.FunSuite with SnapshotAssertions with Util:
     KernelVersion("6.1.21-v8+"),
     OperatingSystem("Debian GNU/Linux 11 (bullseye)")
   )
+
+  given Hardware = Stats.Hardware("RPi 4 Model B Rev 1.2")
 
   val ap = AccessPoint(
     Ssid("Ginkunai"),

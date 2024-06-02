@@ -36,13 +36,21 @@ def getAccessPoint[F[_]: Logger](path: Dbus.AccessPointPath)(using dbus: Dbus[F]
     .eval(dbus.accessPoint(path))
     .handleErrorWith(_ => Stream.eval(Logger[F].info(s"Skipping $path as it does not exist anymore")).drain)
 
-def sensorStream[F[_]: Logger]()(using dbus: Dbus[F], config: Config) =
+def statsStream[F[_]: Logger]()(using stats: Stats[F], sys: Dbus.System, hw: Stats.Hardware, conf: Config) =
+  Stream.eval(stats.cpuClockSpeed()).map(Sensors.mkSensors) ++
+    Stream.eval(stats.cpuTemperature()).map(Sensors.mkSensors) ++
+    Stream.eval(stats.cpuUsage()).map(Sensors.mkSensors) ++
+    Stream.eval(stats.memoryUsage()).map(Sensors.mkSensors) ++
+    Stream.eval(stats.uptime()).map(Sensors.mkSensors)
+
+def sensorStream[F[_]: Logger]()(using dbus: Dbus[F], stats: Stats[F], config: Config) =
   for
     given Dbus.System <- Stream.eval(dbus.system())
+    given Stats.Hardware <- Stream.eval(stats.hardware())
     ApStream(active, accessPoints) <- apStream()
-    sensor <-
-      active
-        .map(Sensors.mkSensors)
-        .append(accessPoints.map(Sensors.mkSensors))
-        .flatMap(Stream.emits)
+    sensor <- Stream.empty
+      .append(active.map(Sensors.mkSensors))
+      .append(accessPoints.map(Sensors.mkSensors))
+      .append(statsStream())
+      .flatMap(Stream.emits)
   yield sensor

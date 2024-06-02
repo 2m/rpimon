@@ -49,11 +49,12 @@ object RpiMon extends IOApp:
     case _         => Sync[F].pure(())
   }
 
-  def streams[F[_]: Processes: Logger: Console: Network: Async: Proc]()(using conf: Config) =
+  def streams[F[_]: Processes: Logger: Console: Network: Async: Proc: FileSystem]()(using conf: Config) =
     val transportConfig = TransportConfig[F](conf.mqttHost.unwrap, conf.mqttPort.unwrap)
     val sessionConfig = SessionConfig("rpimon")
 
     given Dbus[F] = ProcessDbus[F]
+    given Stats[F] = FileStats[F]
     val sensors = sensorStream[F]()
 
     Session[F](transportConfig, sessionConfig).use: session =>
@@ -70,6 +71,7 @@ object RpiMon extends IOApp:
 
   override def run(args: List[String]): IO[ExitCode] =
     given Proc[IO] = Fs2Proc[IO]
+    given FileSystem[IO] = Fs2FileSystem[IO]
     for
       given Logger[IO] <- DefaultLogger.makeIo(consoleOutput)
       given Config <- config.load[IO]
