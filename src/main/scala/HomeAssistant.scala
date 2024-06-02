@@ -51,8 +51,8 @@ object HomeAssistant:
         )
       case State.Binary(_) => Json.obj()
     def value = state match
-      case State.Measurement(_, value) => value.asJson
-      case State.Binary(value)         => (if value then "on" else "off").asJson
+      case State.Measurement(_, value) => value.toString
+      case State.Binary(value)         => if value then "on" else "off"
     def component = state match
       case State.Measurement(_, _) => "sensor"
       case State.Binary(_)         => "binary_sensor"
@@ -80,10 +80,10 @@ object HomeAssistant:
       .deepMerge(state.config)
 
     private def deviceConfig = Json.obj(
-      "identifiers" -> Json.arr(sys.hostname.asJson),
+      "identifiers" -> Json.arr(sanitizedHostname.asJson),
       "manufacturer" -> BuildInfo.organizationName.asJson,
       "model" -> s"rpimon ${conf.version}".asJson,
-      "name" -> sys.hostname.asJson,
+      "name" -> sanitizedHostname.asJson,
       "sw_version" -> s"${sys.operatingSystem} / ${sys.kernelName} ${sys.kernelVersion}".asJson,
       "configuration_url" -> BuildInfo.homepage.asJson
     )

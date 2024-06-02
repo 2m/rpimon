@@ -16,8 +16,6 @@
 
 package rpimon
 
-import io.circe.syntax.*
-
 class HomeAssistantSuite extends munit.FunSuite with SnapshotAssertions with Util:
   import Config.*
   import Dbus.*
@@ -55,8 +53,8 @@ class HomeAssistantSuite extends munit.FunSuite with SnapshotAssertions with Uti
     assertEquals(binarySensor.configTopic, "homeassistant/binary_sensor/rpimon/openmower_wifi_on/config")
 
   test("sensor state"):
-    assertEquals(sensor.stateValue, 123.asJson)
-    assertEquals(binarySensor.stateValue, "on".asJson)
+    assertEquals(sensor.stateValue, "123")
+    assertEquals(binarySensor.stateValue, "on")
 
   test("sensor state topic"):
     assertEquals(sensor.stateTopic, "rpimon/openmower/wifi_bssid")

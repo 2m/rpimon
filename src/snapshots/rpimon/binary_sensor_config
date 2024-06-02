@@ -1,0 +1,19 @@
+{
+    "unique_id" : "openmower_wifi_on",
+    "object_id" : "wifi_on",
+    "name" : "WiFi On",
+    "icon" : "mdi:router-wireless",
+    "state_topic" : "rpimon/openmower/wifi_on",
+    "force_update" : true,
+    "expire_after" : 10,
+    "device" : {
+        "identifiers" : [
+            "openmower"
+        ],
+        "manufacturer" : "github.com/2m/rpimon/contributors",
+        "model" : "rpimon 0.0.0",
+        "name" : "openmower",
+        "sw_version" : "Debian GNU/Linux 11 (bullseye) / Linux 6.1.21-v8+",
+        "configuration_url" : "https://github.com/2m/rpimon"
+    }
+}

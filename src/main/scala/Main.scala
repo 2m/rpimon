@@ -63,7 +63,7 @@ object RpiMon extends IOApp:
         .flatMap(_ => sensors)
         .evalMap: s =>
           session.publish(s.configTopic, s.configValue.noSpaces.getBytes("UTF-8").toVector) *>
-            session.publish(s.stateTopic, s.stateValue.noSpaces.getBytes("UTF-8").toVector)
+            session.publish(s.stateTopic, s.stateValue.getBytes("UTF-8").toVector)
 
       Logger[F].info(s"rpimon will report every ${conf.tick} to ${conf.mqttHost}:${conf.mqttPort}") *>
         (publisher, sessionStatus).pure[F]
