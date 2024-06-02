@@ -61,7 +61,7 @@ object Config:
 
 val config =
   (
-    env("RPIMON_TICK").default(2.seconds.toString).as[Tick],
+    env("RPIMON_TICK").default(5.seconds.toString).as[Tick],
     env("RPIMON_TOPIC_PREFIX").default("rpimon").as[TopicPrefix],
     env("RPIMON_MQTT_HOST").default("localhost").as[MqttHost],
     env("RPIMON_MQTT_PORT").default("1883").as[MqttPort],

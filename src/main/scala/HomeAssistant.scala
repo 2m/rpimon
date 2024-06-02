@@ -80,7 +80,7 @@ object HomeAssistant:
         "icon" -> icon.asJson,
         "state_topic" -> stateTopic.asJson,
         "force_update" -> true.asJson,
-        "expire_after" -> (5 * conf.tick.unwrap).toSeconds.asJson,
+        "expire_after" -> (10 * conf.tick.unwrap).toSeconds.asJson,
         "device" -> deviceConfig
       )
       .deepMerge(state.config)
