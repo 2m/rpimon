@@ -16,6 +16,8 @@
 
 package rpimon
 
+import scala.concurrent.duration.*
+
 import io.circe.*
 import io.circe.syntax.*
 import neotype.*
@@ -56,12 +58,15 @@ object HomeAssistant:
   ):
     def config = Json
       .obj(
-        "unique_id" -> s"${sys.hostname}_$id".asJson,
+        "unique_id" -> s"${sanitizedHostname}_$id".asJson,
+        "object_id" -> id.asJson,
         "name" -> name.asJson,
         "icon" -> icon.asJson,
         "state_class" -> stateClass.asJson,
         "unit_of_measurement" -> units.asJson,
         "state_topic" -> stateTopic.asJson,
+        "force_update" -> true.asJson,
+        "expire_after" -> (5 * conf.tick.unwrap).toSeconds.asJson,
         "device" -> deviceConfig
       )
 
@@ -74,7 +79,9 @@ object HomeAssistant:
       "configuration_url" -> BuildInfo.homepage.asJson
     )
 
-    def configTopic = s"homeassistant/sensor/${conf.topicPrefix}/${sys.hostname}_$id/config"
+    def configTopic = s"homeassistant/sensor/${conf.topicPrefix}/${sanitizedHostname}_$id/config"
 
     def state = value.asJson
-    def stateTopic = s"${conf.topicPrefix}/${sys.hostname}/$id"
+    def stateTopic = s"${conf.topicPrefix}/${sanitizedHostname}/$id"
+
+    private def sanitizedHostname = sys.hostname.unwrap.replaceAll("[^a-zA-Z0-9-]", "_")

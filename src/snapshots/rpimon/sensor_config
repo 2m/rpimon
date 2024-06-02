@@ -1,10 +1,13 @@
 {
     "unique_id" : "openmower_wifi_bssid",
+    "object_id" : "wifi_bssid",
     "name" : "WiFi BSSID",
     "icon" : "mdi:router-wireless",
     "state_class" : "measurement",
     "unit_of_measurement" : "m",
     "state_topic" : "rpimon/openmower/wifi_bssid",
+    "force_update" : true,
+    "expire_after" : 10,
     "device" : {
         "identifiers" : [
             "openmower"

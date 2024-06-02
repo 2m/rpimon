@@ -1,0 +1,21 @@
+{
+    "unique_id" : "openmower_ap_strength_001122334455",
+    "object_id" : "ap_strength_001122334455",
+    "name" : "AP 00:11:22:33:44:55 Strength",
+    "icon" : "mdi:wifi",
+    "state_class" : "measurement",
+    "unit_of_measurement" : "%",
+    "state_topic" : "rpimon/openmower/ap_strength_001122334455",
+    "force_update" : true,
+    "expire_after" : 10,
+    "device" : {
+        "identifiers" : [
+            "openmower"
+        ],
+        "manufacturer" : "github.com/2m/rpimon/contributors",
+        "model" : "rpimon 0.0.0",
+        "name" : "openmower",
+        "sw_version" : "Debian GNU/Linux 11 (bullseye) / Linux 6.1.21-v8+",
+        "configuration_url" : "https://github.com/2m/rpimon"
+    }
+}

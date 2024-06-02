@@ -27,9 +27,9 @@ def apStream[F[_]: Logger]()(using dbus: Dbus[F], conf: Config) =
   for
     devicePath <- Stream.eval(dbus.devicePath(Dbus.Device(conf.wirelessDevice.unwrap)))
     wirelessDevice <- Stream.eval(dbus.wirelessDevice(devicePath))
-    activeAccessPoint = Stream.emit(wirelessDevice.active).flatMap(getAccessPoint).map(Dbus.ActiveAccessPoint.apply)
+    activeAccessPoint <- getAccessPoint(wirelessDevice.active).map(Dbus.ActiveAccessPoint.apply)
     accessPoints = Stream.emits(wirelessDevice.accessPoints).flatMap(getAccessPoint)
-  yield ApStream(activeAccessPoint, accessPoints)
+  yield ApStream(Stream(activeAccessPoint), accessPoints.filter(_.ssid == activeAccessPoint.ap.ssid))
 
 def getAccessPoint[F[_]: Logger](path: Dbus.AccessPointPath)(using dbus: Dbus[F]) =
   Stream
@@ -38,8 +38,7 @@ def getAccessPoint[F[_]: Logger](path: Dbus.AccessPointPath)(using dbus: Dbus[F]
 
 def sensorStream[F[_]: Logger]()(using dbus: Dbus[F], config: Config) =
   for
-    system <- Stream.eval(dbus.system())
-    given Dbus.System = system
+    given Dbus.System <- Stream.eval(dbus.system())
     ApStream(active, accessPoints) <- apStream()
     sensor <-
       active

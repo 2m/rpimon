@@ -16,7 +16,7 @@
 
 package rpimon
 
-class SensorsSuite extends munit.FunSuite with Util:
+class SensorsSuite extends munit.FunSuite with SnapshotAssertions with Util:
   import Config.*
   import Dbus.*
 
@@ -43,8 +43,8 @@ class SensorsSuite extends munit.FunSuite with Util:
     // https://www.vultr.com/resources/mac-converter/
     assertEquals(sensors.map(_.state.toString), List("55", "5745", "73588229205"))
 
-  test("ap sensors"):
+  snapshot.test("ap sensors"): assertSnapshot =>
     val s = summon[Sensors[AccessPoint]]
     val sensors = s.mkSensors(ap)
     assertEquals(sensors.size, 1)
-    assertEquals(sensors.head.stateTopic, "rpimon/openmower/ap_strength_73588229205")
+    assertSnapshot(sensors.head.config.spaces4)

@@ -64,7 +64,7 @@ given Sensors[Dbus.AccessPoint] with
 
   def mkSensors(ap: Dbus.AccessPoint)(using Dbus.System, Config) = List(
     Sensor(
-      Id(s"ap_strength_${ap.mac.toLong}"),
+      Id(s"ap_strength_${ap.mac.toHex}"),
       Name(s"AP ${ap.mac} Strength"),
       Icon.Wifi,
       StateClass.Measurement,
@@ -73,4 +73,6 @@ given Sensors[Dbus.AccessPoint] with
     )
   )
 
-extension (mac: Dbus.Mac) def toLong = mac.unwrap.replace(":", "").pipe(s => JLong.parseLong(s, 16))
+extension (mac: Dbus.Mac)
+  def toHex = mac.unwrap.replace(":", "")
+  def toLong: Long = toHex.pipe(s => JLong.parseLong(s, 16))

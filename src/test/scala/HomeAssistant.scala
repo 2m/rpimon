@@ -16,10 +16,9 @@
 
 package rpimon
 
-import com.indoorvivants.snapshots.munit_integration.*
 import io.circe.syntax.*
 
-class HomeAssistantSuite extends munit.FunSuite with MunitSnapshotsIntegration with Util:
+class HomeAssistantSuite extends munit.FunSuite with SnapshotAssertions with Util:
   import Config.*
   import Dbus.*
   import HomeAssistant.*
@@ -31,17 +30,17 @@ class HomeAssistantSuite extends munit.FunSuite with MunitSnapshotsIntegration w
     OperatingSystem("Debian GNU/Linux 11 (bullseye)")
   )
 
-  val sensor = Sensor(
-    id = Id("wifi_bssid"),
-    name = Name("WiFi BSSID"),
-    icon = Icon.Ap,
-    stateClass = StateClass.Measurement,
-    units = Units.Meter,
-    value = 123L
+  def sensor(using Dbus.System) = Sensor(
+    Id("wifi_bssid"),
+    Name("WiFi BSSID"),
+    Icon.Ap,
+    StateClass.Measurement,
+    Units.Meter,
+    123L
   )
 
-  test("sensor config"):
-    assertSnapshot("config", sensor.config.spaces4)
+  snapshot.test("sensor config"): assertSnapshot =>
+    assertSnapshot(sensor.config.spaces4)
 
   test("sensor config topic"):
     assertEquals(sensor.configTopic, "homeassistant/sensor/rpimon/openmower_wifi_bssid/config")
@@ -51,3 +50,23 @@ class HomeAssistantSuite extends munit.FunSuite with MunitSnapshotsIntegration w
 
   test("sensor state topic"):
     assertEquals(sensor.stateTopic, "rpimon/openmower/wifi_bssid")
+
+  test("sensor object_id generated from id"):
+    val sensor = Sensor(
+      Id("wifi_freq"),
+      Name("WiFi Channel Frequency"),
+      Icon.Sine,
+      StateClass.Measurement,
+      Units.MHz,
+      123L
+    )
+    assertEquals(sensor.config.hcursor.downField("object_id").as[String], Right("wifi_freq"))
+
+  test("sanitized hostname"):
+    given System = Dbus.System(
+      Hostname("openmower.local"),
+      KernelName("Linux"),
+      KernelVersion("6.1.21-v8+"),
+      OperatingSystem("Debian GNU/Linux 11 (bullseye)")
+    )
+    assertEquals(sensor.config.hcursor.downField("unique_id").as[String], Right("openmower_local_wifi_bssid"))

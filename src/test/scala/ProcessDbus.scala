@@ -28,8 +28,9 @@ import rpimon.Dbus.*
 object ProcessDbusSuite:
   val responses = Map(
     "GetDeviceByIpIface" -> """{"data":["/org/freedesktop/NetworkManager/Devices/3"]}""",
-    "org.freedesktop.NetworkManager.Device.Wireless" -> """{"data":[{"AccessPoints":{"data":["/org/freedesktop/NetworkManager/AccessPoint/123456","/org/freedesktop/NetworkManager/AccessPoint/non-existent"]},"ActiveAccessPoint":{"data":"/org/freedesktop/NetworkManager/AccessPoint/123456"}}]}""",
+    "org.freedesktop.NetworkManager.Device.Wireless" -> """{"data":[{"AccessPoints":{"data":["/org/freedesktop/NetworkManager/AccessPoint/123456","/org/freedesktop/NetworkManager/AccessPoint/123457","/org/freedesktop/NetworkManager/AccessPoint/non-existent"]},"ActiveAccessPoint":{"data":"/org/freedesktop/NetworkManager/AccessPoint/123456"}}]}""",
     "/org/freedesktop/NetworkManager/AccessPoint/123456" -> """{"data":[{"Ssid":{"data":[36,36]},"Frequency":{"data":5745},"HwAddress":{"data":"00:11:22:33:44:55"},"Strength":{"data":55}},{"Ssid":{"data":[71,105,110,107,117,110,97,105]},"Frequency":{"data":5745},"HwAddress":{"data":"00:11:22:33:44:56"},"Strength":{"data":55}}]}""",
+    "/org/freedesktop/NetworkManager/AccessPoint/123457" -> """{"data":[{"Ssid":{"data":[36,36,36]},"Frequency":{"data":5745},"HwAddress":{"data":"00:11:22:33:44:55"},"Strength":{"data":55}},{"Ssid":{"data":[71,105,110,107,117,110,97,105]},"Frequency":{"data":5745},"HwAddress":{"data":"00:11:22:33:44:56"},"Strength":{"data":55}}]}""",
     "/org/freedesktop/NetworkManager/AccessPoint/non-existent" -> "",
     "org.freedesktop.hostname1" -> """{"data":[{"Hostname":{"data":"openmower"},"KernelName":{"data":"Linux"},"KernelRelease":{"data":"6.1.21-v8+"},"OperatingSystemPrettyName":{"data":"Debian GNU/Linux 11 (bullseye)"}}]}"""
   )
@@ -65,7 +66,7 @@ class ProcessDbusSuite extends CatsEffectSuite with DiffxAssertions with Util:
       devicePath <- dbus.devicePath(Device("wlan0"))
       wirelessDevice <- dbus.wirelessDevice(devicePath)
     yield
-      assertEqual(wirelessDevice.accessPoints.size, 2)
+      assertEqual(wirelessDevice.accessPoints.size, 3)
 
       assertEqual(
         wirelessDevice.accessPoints.head.toString,
@@ -90,6 +91,21 @@ class ProcessDbusSuite extends CatsEffectSuite with DiffxAssertions with Util:
     }
 
   test("skip unprocessable access points"):
+    given Proc[IO] = mockProc[IO](responses)
+    given Dbus[IO] = ProcessDbus[IO]
+
+    val d = for
+      given Logger[IO] <- Stream.eval(DefaultLogger.makeIo(consoleOutput))
+      ApStream(_, apStream) <- apStream[IO]()
+      accessPoint <- apStream
+    yield accessPoint
+
+    d.compile.toList.map { accessPoints =>
+      assertEqual(accessPoints.size, 1)
+      assertEqual(accessPoints.head.ssid.toString, Ssid("$$").toString)
+    }
+
+  test("only return other access points with the same ssid as the active ap"):
     given Proc[IO] = mockProc[IO](responses)
     given Dbus[IO] = ProcessDbus[IO]
 

@@ -19,20 +19,15 @@ package rpimon
 import java.nio.file.Files
 
 import scala.concurrent.duration.*
-import scala.util.chaining.*
 
 import com.comcast.ip4s.*
-import io.circe.Json
-import io.circe.parser.*
+import com.indoorvivants.snapshots.munit_integration.MunitSnapshotsIntegration
 
 trait Util:
   import Config.*
 
   def file(filename: String) =
     Files.readString(BuildInfo.test_resourceDirectory.toPath().resolve(filename + ".json"))
-
-  def json(filename: String) =
-    file(filename).pipe(parse).getOrElse(Json.Null)
 
   given Config =
     Config(
@@ -43,3 +38,11 @@ trait Util:
       WirelessDevice("wlan0"),
       Version("0.0.0")
     )
+
+trait SnapshotAssertions extends MunitSnapshotsIntegration:
+  this: munit.FunSuite =>
+
+  val snapshot = FunFixture[(String) => Unit](
+    setup = test => (value: String) => assertSnapshot(test.name, value),
+    teardown = _ => ()
+  )
