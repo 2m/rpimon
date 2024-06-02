@@ -7,7 +7,7 @@
     "icon" : "mdi:wifi",
     "state_topic" : "rpimon/openmower/ap_strength_001122334455",
     "force_update" : true,
-    "expire_after" : 10,
+    "expire_after" : 20,
     "device" : {
         "identifiers" : [
             "openmower"

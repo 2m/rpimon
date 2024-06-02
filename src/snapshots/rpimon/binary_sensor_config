@@ -5,7 +5,7 @@
     "icon" : "mdi:router-wireless",
     "state_topic" : "rpimon/openmower/wifi_on",
     "force_update" : true,
-    "expire_after" : 10,
+    "expire_after" : 20,
     "device" : {
         "identifiers" : [
             "openmower"
