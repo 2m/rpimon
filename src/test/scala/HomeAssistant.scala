@@ -54,7 +54,7 @@ class HomeAssistantSuite extends munit.FunSuite with SnapshotAssertions with Uti
 
   test("sensor state"):
     assertEquals(sensor.stateValue, "123")
-    assertEquals(binarySensor.stateValue, "on")
+    assertEquals(binarySensor.stateValue, "ON")
 
   test("sensor state topic"):
     assertEquals(sensor.stateTopic, "rpimon/openmower/wifi_bssid")

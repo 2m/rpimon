@@ -39,7 +39,7 @@ class SensorsSuite extends munit.FunSuite with SnapshotAssertions with Util:
     val s = summon[Sensors[ActiveAccessPoint]]
     val sensors = s.mkSensors(activeAp)
     assertEquals(sensors.size, 3)
-    assertEquals(sensors.map(_.stateValue.toString), List("55", "5745", "on"))
+    assertEquals(sensors.map(_.stateValue.toString), List("55", "5745", "ON"))
 
   snapshot.test("ap sensors"): assertSnapshot =>
     val s = summon[Sensors[AccessPoint]]

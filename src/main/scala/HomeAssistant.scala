@@ -52,7 +52,7 @@ object HomeAssistant:
       case State.Binary(_) => Json.obj()
     def value = state match
       case State.Measurement(_, value) => value.toString
-      case State.Binary(value)         => if value then "on" else "off"
+      case State.Binary(value)         => if value then "ON" else "OFF"
     def component = state match
       case State.Measurement(_, _) => "sensor"
       case State.Binary(_)         => "binary_sensor"
