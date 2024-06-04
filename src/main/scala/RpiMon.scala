@@ -41,7 +41,8 @@ def statsStream[F[_]: Logger]()(using stats: Stats[F], sys: Dbus.System, hw: Sta
     Stream.eval(stats.cpuTemperature()).map(Sensors.mkSensors) ++
     Stream.eval(stats.cpuUsage()).map(Sensors.mkSensors) ++
     Stream.eval(stats.memoryUsage()).map(Sensors.mkSensors) ++
-    Stream.eval(stats.uptime()).map(Sensors.mkSensors)
+    Stream.eval(stats.uptime()).map(Sensors.mkSensors) ++
+    Stream.eval(stats.wifiSignal()).map(Sensors.mkSensors)
 
 def sensorStream[F[_]: Logger]()(using dbus: Dbus[F], stats: Stats[F], config: Config) =
   for

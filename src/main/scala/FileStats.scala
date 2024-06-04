@@ -109,3 +109,15 @@ class FileStats[F[_]: FileSystem: Concurrent] extends Stats[F]:
       .string
       .map(_.split(" ").head.pipe(BigDecimal.apply).toInt / 3600 / 24)
       .map(Uptime.apply)
+
+  def wifiSignal() =
+    FileSystem
+      .readAll[F](Path("/proc/net/wireless"))
+      .through(text.utf8.decode)
+      .through(text.lines)
+      .drop(2)
+      .head
+      .map(_.trim.split(" +").drop(3).head.replace(".", "").toInt)
+      .map(WifiSignal.apply)
+      .compile
+      .onlyOrError

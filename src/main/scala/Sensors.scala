@@ -127,3 +127,15 @@ given Sensors[Stats.Uptime] with
       State.Measurement(Units.Days, s.unwrap)
     )
   )
+
+given Sensors[Stats.WifiSignal] with
+  import HomeAssistant.*
+
+  def mkSensors(s: Stats.WifiSignal)(using Dbus.System, Stats.Hardware, Config) = List(
+    Sensor(
+      Id(s"wifi_signal"),
+      Name(s"WiFi Signal"),
+      Icon.Wifi,
+      State.Measurement(Units.SignalLevel, s.unwrap)
+    )
+  )

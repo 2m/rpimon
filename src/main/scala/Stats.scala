@@ -37,6 +37,9 @@ object Stats:
   object Uptime extends Newtype[Int]
   type Uptime = Uptime.Type
 
+  object WifiSignal extends Newtype[Int]
+  type WifiSignal = WifiSignal.Type
+
 trait Stats[F[_]]:
   import Stats.*
 
@@ -46,3 +49,4 @@ trait Stats[F[_]]:
   def cpuUsage(): F[CpuUsage]
   def memoryUsage(): F[MemoryUsage]
   def uptime(): F[Uptime]
+  def wifiSignal(): F[WifiSignal]

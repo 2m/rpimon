@@ -31,7 +31,8 @@ object FileStatsSuite extends Util:
     "/proc/loadavg" -> "1.65 1.91 1.95 1/490 28530",
     "/proc/cpuinfo" -> file("cpuinfo.txt"),
     "/proc/meminfo" -> file("meminfo.txt"),
-    "/proc/uptime" -> "545832.69 1689235.32"
+    "/proc/uptime" -> "545832.69 1689235.32",
+    "/proc/net/wireless" -> file("wireless.txt")
   )
 
   def mockFileSystem[F[_]](responses: Map[String, String]) = new FileSystem[F]:
@@ -64,3 +65,6 @@ class FileStatsSuite extends CatsEffectSuite with DiffxAssertions with Util:
 
   test("get uptime"):
     stats.uptime().map(d => assertEqual(d.toString, Uptime(6).toString))
+
+  test("get wifi signal"):
+    stats.wifiSignal().map(d => assertEqual(d.toString, WifiSignal(-64).toString))

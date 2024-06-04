@@ -67,6 +67,7 @@ object HomeAssistant:
     case Meter extends Units("m")
     case Degrees extends Units("°C")
     case Days extends Units("days")
+    case SignalLevel extends Units("dBm")
 
   object Units:
     given Encoder[Units] = Encoder[String].contramap(_.value)
