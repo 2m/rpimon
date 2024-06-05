@@ -21,19 +21,25 @@ import com.softwaremill.diffx.munit.DiffxAssertions
 import fs2.Stream
 import fs2.io.file.Path
 import munit.CatsEffectSuite
+import org.legogroup.woof.DefaultLogger
+import org.legogroup.woof.Logger
 import rpimon.Stats.*
 
 object FileStatsSuite extends Util:
-  val responses = Map(
+  val defaultResponses = Map(
     "/sys/firmware/devicetree/base/model" -> "Raspberry Pi 4 Model B Rev 1.5/",
     "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq" -> "1500000",
     "/sys/class/thermal/thermal_zone0/temp" -> "63796",
     "/proc/loadavg" -> "1.65 1.91 1.95 1/490 28530",
     "/proc/cpuinfo" -> file("cpuinfo.txt"),
     "/proc/meminfo" -> file("meminfo.txt"),
-    "/proc/uptime" -> "545832.69 1689235.32",
-    "/proc/net/wireless" -> file("wireless.txt")
+    "/proc/uptime" -> "545832.69 1689235.32"
   )
+
+  val wireless = "/proc/net/wireless" -> file("wireless.txt")
+  val noWireless = "/proc/net/wireless" -> "something"
+
+  val responses = defaultResponses + wireless
 
   def mockFileSystem[F[_]](responses: Map[String, String]) = new FileSystem[F]:
     def readAll(file: Path): Stream[F, Byte] =
@@ -68,3 +74,22 @@ class FileStatsSuite extends CatsEffectSuite with DiffxAssertions with Util:
 
   test("get wifi signal"):
     stats.wifiSignal().map(d => assertEqual(d.toString, WifiSignal(-64).toString))
+
+  test("do not fail stats stream when wifi signal not available"):
+    import Dbus.*
+    given FileSystem[IO] = mockFileSystem[IO](defaultResponses + noWireless)
+    given FileStats[IO] = FileStats[IO]
+    given System = System(
+      Hostname("openmower"),
+      KernelName("Linux"),
+      KernelVersion("6.1.21-v8+"),
+      OperatingSystem("Debian GNU/Linux 11 (bullseye)")
+    )
+    given Hardware = Stats.Hardware("RPi 4 Model B Rev 1.2")
+
+    val stats = for
+      given Logger[IO] <- Stream.eval(DefaultLogger.makeIo(consoleOutput))
+      stats <- statsStream()
+    yield stats
+    stats.compile.toList.map: sensors =>
+      assert(sensors.nonEmpty)

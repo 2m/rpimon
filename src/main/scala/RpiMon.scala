@@ -34,7 +34,7 @@ def apStream[F[_]: Logger: Applicative]()(using dbus: Dbus[F], conf: Config) =
 
   stream.handleErrorWith(err =>
     Stream.eval(
-      Logger[F].info(s"Unable to get AP info. Error: ${err.getMessage}") *>
+      Logger[F].info(s"Unable to get AP info (${err.getMessage})") *>
         ApStream(Stream.empty, Stream.empty).pure[F]
     )
   )
@@ -45,12 +45,12 @@ def getAccessPoint[F[_]: Logger](path: Dbus.AccessPointPath)(using dbus: Dbus[F]
     .handleErrorWith(_ => Stream.eval(Logger[F].info(s"Skipping AP [$path] as it does not exist anymore")).drain)
 
 def statsStream[F[_]: Logger]()(using stats: Stats[F], sys: Dbus.System, hw: Stats.Hardware, conf: Config) =
-  Stream.eval(stats.cpuClockSpeed()).map(Sensors.mkSensors) ++
-    Stream.eval(stats.cpuTemperature()).map(Sensors.mkSensors) ++
-    Stream.eval(stats.cpuUsage()).map(Sensors.mkSensors) ++
-    Stream.eval(stats.memoryUsage()).map(Sensors.mkSensors) ++
-    Stream.eval(stats.uptime()).map(Sensors.mkSensors) ++
-    Stream.eval(stats.wifiSignal()).map(Sensors.mkSensors)
+  mkSensorOrError(stats.cpuClockSpeed()) ++
+    mkSensorOrError(stats.cpuTemperature()) ++
+    mkSensorOrError(stats.cpuUsage()) ++
+    mkSensorOrError(stats.memoryUsage()) ++
+    mkSensorOrError(stats.uptime()) ++
+    mkSensorOrError(stats.wifiSignal())
 
 def sensorStream[F[_]: Logger: Applicative]()(using dbus: Dbus[F], stats: Stats[F], config: Config) =
   for
@@ -63,3 +63,9 @@ def sensorStream[F[_]: Logger: Applicative]()(using dbus: Dbus[F], stats: Stats[
       .append(statsStream())
       .flatMap(Stream.emits)
   yield sensor
+
+private def mkSensorOrError[F[_]: Logger, T](t: F[T])(using Sensors[T], Dbus.System, Stats.Hardware, Config) =
+  Stream
+    .eval(t)
+    .handleErrorWith(t => Stream.eval(Logger[F].info(t.getMessage)).drain)
+    .map(Sensors.mkSensors)

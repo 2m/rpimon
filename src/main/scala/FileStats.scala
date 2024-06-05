@@ -17,7 +17,9 @@
 package rpimon
 
 import scala.util.chaining.*
+import scala.util.control.NonFatal
 
+import cats.MonadError
 import cats.effect.Concurrent
 import cats.syntax.all.*
 import fs2.Stream
@@ -111,13 +113,26 @@ class FileStats[F[_]: FileSystem: Concurrent] extends Stats[F]:
       .map(Uptime.apply)
 
   def wifiSignal() =
-    FileSystem
-      .readAll[F](Path("/proc/net/wireless"))
-      .through(text.utf8.decode)
-      .through(text.lines)
-      .drop(2)
-      .head
-      .map(_.trim.split(" +").drop(3).head.replace(".", "").toInt)
-      .map(WifiSignal.apply)
-      .compile
-      .onlyOrError
+    for
+      lines <- FileSystem
+        .readAll[F](Path("/proc/net/wireless"))
+        .through(text.utf8.decode)
+        .through(text.lines)
+        .compile
+        .toList
+      signal <-
+        try
+          lines
+            .drop(2)
+            .head
+            .pipe(_.trim.split(" +").drop(3).head.replace(".", "").toInt)
+            .pipe(WifiSignal.apply)
+            .pure[F]
+        catch
+          case NonFatal(ex) =>
+            summon[MonadError[F, Throwable]].raiseError(
+              Error(s"""|Unable to parse WiFi signal strength from /proc/net/wireless with contents:
+                        |${lines.mkString("\n")}
+                        |""".stripMargin)
+            )
+    yield signal
