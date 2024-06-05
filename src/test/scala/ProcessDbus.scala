@@ -26,14 +26,22 @@ import org.legogroup.woof.Logger
 import rpimon.Dbus.*
 
 object ProcessDbusSuite:
-  val responses = Map(
-    "GetDeviceByIpIface" -> """{"data":["/org/freedesktop/NetworkManager/Devices/3"]}""",
-    "org.freedesktop.NetworkManager.Device.Wireless" -> """{"data":[{"AccessPoints":{"data":["/org/freedesktop/NetworkManager/AccessPoint/123456","/org/freedesktop/NetworkManager/AccessPoint/123457","/org/freedesktop/NetworkManager/AccessPoint/non-existent"]},"ActiveAccessPoint":{"data":"/org/freedesktop/NetworkManager/AccessPoint/123456"}}]}""",
+  val defaultResponses = Map(
     "/org/freedesktop/NetworkManager/AccessPoint/123456" -> """{"data":[{"Ssid":{"data":[36,36]},"Frequency":{"data":5745},"HwAddress":{"data":"00:11:22:33:44:55"},"Strength":{"data":55}},{"Ssid":{"data":[71,105,110,107,117,110,97,105]},"Frequency":{"data":5745},"HwAddress":{"data":"00:11:22:33:44:56"},"Strength":{"data":55}}]}""",
     "/org/freedesktop/NetworkManager/AccessPoint/123457" -> """{"data":[{"Ssid":{"data":[36,36,36]},"Frequency":{"data":5745},"HwAddress":{"data":"00:11:22:33:44:55"},"Strength":{"data":55}},{"Ssid":{"data":[71,105,110,107,117,110,97,105]},"Frequency":{"data":5745},"HwAddress":{"data":"00:11:22:33:44:56"},"Strength":{"data":55}}]}""",
     "/org/freedesktop/NetworkManager/AccessPoint/non-existent" -> "",
     "org.freedesktop.hostname1" -> """{"data":[{"Hostname":{"data":"openmower"},"KernelName":{"data":"Linux"},"KernelRelease":{"data":"6.1.21-v8+"},"OperatingSystemPrettyName":{"data":"Debian GNU/Linux 11 (bullseye)"}}]}"""
   )
+
+  val wirelessDevice = "GetDeviceByIpIface" -> """{"data":["/org/freedesktop/NetworkManager/Devices/3"]}"""
+  val noWirelessDevice = "GetDeviceByIpIface" -> """{"data":[]}"""
+
+  val nonExistentAmongOthers =
+    "org.freedesktop.NetworkManager.Device.Wireless" -> """{"data":[{"AccessPoints":{"data":["/org/freedesktop/NetworkManager/AccessPoint/123456","/org/freedesktop/NetworkManager/AccessPoint/123457","/org/freedesktop/NetworkManager/AccessPoint/non-existent"]},"ActiveAccessPoint":{"data":"/org/freedesktop/NetworkManager/AccessPoint/123456"}}]}"""
+  val nonExistentActive =
+    "org.freedesktop.NetworkManager.Device.Wireless" -> """{"data":[{"AccessPoints":{"data":["/org/freedesktop/NetworkManager/AccessPoint/123456","/org/freedesktop/NetworkManager/AccessPoint/123457"]},"ActiveAccessPoint":{"data":"/org/freedesktop/NetworkManager/AccessPoint/non-existent"}}]}"""
+
+  val responses = defaultResponses + wirelessDevice + nonExistentAmongOthers
 
   def mockProc[F[_]](responses: Map[String, String]) = new Proc[F]:
     def spawn(command: String, args: String*): Resource[F, Stream[F, Byte]] =
@@ -103,6 +111,34 @@ class ProcessDbusSuite extends CatsEffectSuite with DiffxAssertions with Util:
     d.compile.toList.map { accessPoints =>
       assertEqual(accessPoints.size, 1)
       assertEqual(accessPoints.head.ssid.toString, Ssid("$$").toString)
+    }
+
+  test("return no access points when the active is not found"):
+    given Proc[IO] = mockProc[IO](responses + nonExistentActive)
+    given Dbus[IO] = ProcessDbus[IO]
+
+    val d = for
+      given Logger[IO] <- Stream.eval(DefaultLogger.makeIo(consoleOutput))
+      ApStream(_, apStream) <- apStream[IO]()
+      accessPoint <- apStream
+    yield accessPoint
+
+    d.compile.toList.map { accessPoints =>
+      assertEqual(accessPoints.size, 0)
+    }
+
+  test("return no access points when wireless device is not found"):
+    given Proc[IO] = mockProc[IO](Map(noWirelessDevice))
+    given Dbus[IO] = ProcessDbus[IO]
+
+    val d = for
+      given Logger[IO] <- Stream.eval(DefaultLogger.makeIo(consoleOutput))
+      ApStream(_, apStream) <- apStream[IO]()
+      accessPoint <- apStream
+    yield accessPoint
+
+    d.compile.toList.map { accessPoints =>
+      assertEqual(accessPoints.size, 0)
     }
 
   test("only return other access points with the same ssid as the active ap"):

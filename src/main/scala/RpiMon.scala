@@ -16,6 +16,7 @@
 
 package rpimon
 
+import cats.Applicative
 import cats.syntax.all.*
 import fs2.Stream
 import neotype.*
@@ -23,18 +24,25 @@ import org.legogroup.woof.{*, given}
 
 case class ApStream[F[_]](active: Stream[F, Dbus.ActiveAccessPoint], accessPoints: Stream[F, Dbus.AccessPoint])
 
-def apStream[F[_]: Logger]()(using dbus: Dbus[F], conf: Config) =
-  for
+def apStream[F[_]: Logger: Applicative]()(using dbus: Dbus[F], conf: Config) =
+  val stream = for
     devicePath <- Stream.eval(dbus.devicePath(Dbus.Device(conf.wirelessDevice.unwrap)))
     wirelessDevice <- Stream.eval(dbus.wirelessDevice(devicePath))
     activeAccessPoint <- getAccessPoint(wirelessDevice.active).map(Dbus.ActiveAccessPoint.apply)
     accessPoints = Stream.emits(wirelessDevice.accessPoints).flatMap(getAccessPoint)
   yield ApStream(Stream(activeAccessPoint), accessPoints.filter(_.ssid == activeAccessPoint.ap.ssid))
 
+  stream.handleErrorWith(err =>
+    Stream.eval(
+      Logger[F].info(s"Unable to get AP info. Error: ${err.getMessage}") *>
+        ApStream(Stream.empty, Stream.empty).pure[F]
+    )
+  )
+
 def getAccessPoint[F[_]: Logger](path: Dbus.AccessPointPath)(using dbus: Dbus[F]) =
   Stream
     .eval(dbus.accessPoint(path))
-    .handleErrorWith(_ => Stream.eval(Logger[F].info(s"Skipping $path as it does not exist anymore")).drain)
+    .handleErrorWith(_ => Stream.eval(Logger[F].info(s"Skipping AP [$path] as it does not exist anymore")).drain)
 
 def statsStream[F[_]: Logger]()(using stats: Stats[F], sys: Dbus.System, hw: Stats.Hardware, conf: Config) =
   Stream.eval(stats.cpuClockSpeed()).map(Sensors.mkSensors) ++
@@ -44,7 +52,7 @@ def statsStream[F[_]: Logger]()(using stats: Stats[F], sys: Dbus.System, hw: Sta
     Stream.eval(stats.uptime()).map(Sensors.mkSensors) ++
     Stream.eval(stats.wifiSignal()).map(Sensors.mkSensors)
 
-def sensorStream[F[_]: Logger]()(using dbus: Dbus[F], stats: Stats[F], config: Config) =
+def sensorStream[F[_]: Logger: Applicative]()(using dbus: Dbus[F], stats: Stats[F], config: Config) =
   for
     given Dbus.System <- Stream.eval(dbus.system())
     given Stats.Hardware <- Stream.eval(stats.hardware())
