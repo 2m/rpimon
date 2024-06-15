@@ -1,11 +1,9 @@
 {
-    "state_class" : "measurement",
-    "unit_of_measurement" : "%",
-    "unique_id" : "openmower_ap_strength_001122334455",
-    "object_id" : "openmower_ap_strength_001122334455",
-    "name" : "00:11:22:33:44:55 Strength",
-    "icon" : "mdi:wifi",
-    "state_topic" : "rpimon/openmower/ap_strength_001122334455",
+    "unique_id" : "openmower_wifi_bssid",
+    "object_id" : "openmower_wifi_bssid",
+    "name" : "Friendly AP Name",
+    "icon" : "mdi:router-wireless",
+    "state_topic" : "rpimon/openmower/wifi_bssid",
     "force_update" : true,
     "expire_after" : 20,
     "device" : {

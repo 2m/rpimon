@@ -16,6 +16,8 @@
 
 package rpimon
 
+import scala.language.future
+
 class SensorsSuite extends munit.FunSuite with SnapshotAssertions with Util:
   import Config.*
   import Dbus.*
@@ -45,6 +47,22 @@ class SensorsSuite extends munit.FunSuite with SnapshotAssertions with Util:
     assertEquals(sensors.map(_.stateValue.toString), List("55", "5745", "ON"))
 
   snapshot.test("ap sensors"): assertSnapshot =>
+    val s = summon[Sensors[AccessPoint]]
+    val sensors = s.mkSensors(ap)
+    assertEquals(sensors.size, 1)
+    assertSnapshot(sensors.head.configValue.spaces4)
+
+  snapshot.test("active ap strength sensor with friendly name"): assertSnapshot =>
+    given Config =
+      summon[Config].copy(macFriendlyNames = MacFriendlyNames(Map("00:11:22:33:44:55" -> "Friendly AP Name")))
+    val s = summon[Sensors[ActiveAccessPoint]]
+    val sensors = s.mkSensors(activeAp)
+    assertEquals(sensors.size, 3)
+    assertSnapshot(sensors.find(_.stateTopic.contains("wifi_bssid")).get.configValue.spaces4)
+
+  snapshot.test("ap sensors with friendly name"): assertSnapshot =>
+    given Config =
+      summon[Config].copy(macFriendlyNames = MacFriendlyNames(Map("00:11:22:33:44:55" -> "Friendly AP Name")))
     val s = summon[Sensors[AccessPoint]]
     val sensors = s.mkSensors(ap)
     assertEquals(sensors.size, 1)

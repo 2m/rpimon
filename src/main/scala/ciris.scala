@@ -16,6 +16,7 @@
 
 package rpimon
 
+import cats.syntax.all.*
 import ciris.ConfigDecoder
 import ciris.ConfigError
 import com.comcast.ip4s.Host
@@ -31,3 +32,17 @@ given ConfigDecoder[String, Host] =
 
 given ConfigDecoder[String, Port] =
   ConfigDecoder[String, String].mapOption("port")(Port.fromString(_))
+
+given ConfigDecoder[String, Map[String, String]] =
+  ConfigDecoder[String, String].mapEither:
+    case (_, "") => Right(Map.empty)
+    case (_, input) =>
+      input
+        .split(",")
+        .toList
+        .map: entry =>
+          entry.split("=").toList match
+            case mac :: friendlyName :: Nil => Right(mac -> friendlyName)
+            case _                          => Left(ConfigError(s"Unable to find values separated by '=' in [$entry]"))
+        .sequence
+        .map(_.toMap)

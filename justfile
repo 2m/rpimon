@@ -14,6 +14,9 @@ docker-size:
 test:
     sbt --client test
 
+snap:
+    sbt --client snapshotsCheck
+
 mqtt-run:
     docker-compose up
 

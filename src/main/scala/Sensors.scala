@@ -48,7 +48,7 @@ given Sensors[Dbus.ActiveAccessPoint] with
       // we want to export this sensor from HA to prometheus,
       // but HA only exports integer sensor values. We set name to bssid
       // so the value is exported as `friendly_name` label in prometheus.
-      Name(active.ap.mac.unwrap),
+      Name(active.ap.mac.toFriendlyName),
       Icon.Ap,
       State.Binary(true)
     )
@@ -60,13 +60,15 @@ given Sensors[Dbus.AccessPoint] with
   def mkSensors(ap: Dbus.AccessPoint)(using Dbus.System, Stats.Hardware, Config) = List(
     Sensor(
       Id(s"ap_strength_${ap.mac.toHex}"),
-      Name(s"AP ${ap.mac} Strength"),
+      Name(s"${ap.mac.toFriendlyName} Strength"),
       Icon.Wifi,
       State.Measurement(Units.Percent, ap.strength.unwrap)
     )
   )
 
-extension (mac: Dbus.Mac) def toHex = mac.unwrap.replace(":", "")
+extension (mac: Dbus.Mac)
+  def toHex = mac.unwrap.replace(":", "")
+  def toFriendlyName(using conf: Config) = conf.macFriendlyNames.unwrap.get(mac.unwrap).getOrElse(mac.unwrap)
 
 given Sensors[Stats.CpuClockSpeed] with
   import HomeAssistant.*

@@ -33,7 +33,7 @@ sudo podman logs -f rpimon
 ```
 
 [rpimon-service]: ./rpimon.service
-[mqttui]:          ./docs/mqttui.png
+[mqttui]:         ./docs/mqttui.png
 
 ### Configuring Home Assistant MQTT bridge
 
@@ -67,6 +67,30 @@ Home Assistant discovery messages are published together with sensor messages. S
 
 [mosquitto-addon]: https://github.com/home-assistant/addons/tree/master/mosquitto
 
+## Configuration details
+
+There are a couple of configuration options that can be set in the `rpimon.service` file as environment variables.
+
+| Environment Variable        | Default value | Description                                     |
+|-----------------------------|---------------|-------------------------------------------------|
+| `RPIMON_TICK`               | `5 seconds`   | Interval between sensor values are sent to MQTT |
+| `RPIMON_MQTT_HOST`          | `localhost`   | MQTT broker host                                |
+| `RPIMON_MQTT_PORT`          | `1883`        | MQTT broker port                                |
+| `RPIMON_TOPIC_PREFIX`       | `rpimon`      | MQTT topic prefix                               |
+| `RPIMON_WIRELESS_DEVICE`    | `wlan0`       | Wireless device to monitor                      |
+| `RPIMON_MAC_FRIENDLY_NAMES` | *empty*       | User friendly names for MAC addresses           |
+
+### `RPIMON_TOPIC_PREFIX`
+
+Controls the prefix used in the MQTT topics for the Home Assistant discovery and sensor messages. For example, with the default prefix value, the following topic names will be used for `wifi_bssid` sensor:
+
+* discovery: `homeassistant/sensor/rpimon/openmower_wifi_bssid/config`
+* sensor state: `rpimon/openmower/wifi_bssid`
+
+### `RPIMON_MAC_FRIENDLY_NAMES`
+
+This environment variable allows to map AP station MAC addresses to user friendly names. It needs to be a string where each entry is separated by a comma and each entry is MAC address and its friendly name separated by an equals sign. For example: `00:11:22:33:44:55=Kitchen,66:77:88:99:AA:BB=Living Room`
+
 ## Sensor details
 
 Most of the sensors are self-explanatory. However a couple of sensors need some extra mention.
@@ -88,6 +112,14 @@ homeassistant_binary_sensor_state{
 ```
 
 Here the `friendly_name` also is prefixed with `openmower` - HA device name. This is done automatically in HA and I was not able to find how to turn it off.
+
+Now we can use Prometheus query `homeassistant_entity_available{entity="binary_sensor.openmower_wifi_bssid"}` and a `Rename fields by regex` transformation with **Match** argument `.*friendly_name="openmower (.*)", instance.*` and **Replace** argument `$1` to get the following graph:
+
+![grafana-wifi][]
+
+Here we also use `RPIMON_MAC_FRIENDLY_NAMES` to convert MAC addresses to more friendlier names.
+
+[grafana-wifi]: ./docs/grafana-wifi.png
 
 ### `sensor.openmower_ap_strength_...`
 

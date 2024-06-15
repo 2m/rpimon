@@ -36,6 +36,7 @@ trait Util:
       MqttHost(host"localhost"),
       MqttPort(port"1883"),
       WirelessDevice("wlan0"),
+      MacFriendlyNames(Map.empty),
       Version("0.0.0")
     )
 

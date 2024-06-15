@@ -31,6 +31,7 @@ case class Config(
     mqttHost: MqttHost,
     mqttPort: MqttPort,
     wirelessDevice: WirelessDevice,
+    macFriendlyNames: MacFriendlyNames,
     version: Version
 )
 
@@ -56,6 +57,9 @@ object Config:
       if input.nonEmpty then true else "Wireless device must not be empty"
   type WirelessDevice = WirelessDevice.Type
 
+  object MacFriendlyNames extends Newtype[Map[String, String]]
+  type MacFriendlyNames = MacFriendlyNames.Type
+
   object Version extends Newtype[String]
   type Version = Version.Type
 
@@ -66,5 +70,6 @@ val config =
     env("RPIMON_MQTT_HOST").default("localhost").as[MqttHost],
     env("RPIMON_MQTT_PORT").default("1883").as[MqttPort],
     env("RPIMON_WIRELESS_DEVICE").default("wlan0").as[WirelessDevice],
+    env("RPIMON_MAC_FRIENDLY_NAMES").default("").as[MacFriendlyNames],
     default(BuildInfo.version).as[Version]
   ).parMapN(Config.apply)
