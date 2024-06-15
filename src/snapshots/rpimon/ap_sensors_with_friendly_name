@@ -3,7 +3,7 @@
     "unit_of_measurement" : "%",
     "unique_id" : "openmower_ap_strength_001122334455",
     "object_id" : "openmower_ap_strength_001122334455",
-    "name" : "00:11:22:33:44:55 Strength",
+    "name" : "Friendly AP Name Strength",
     "icon" : "mdi:wifi",
     "state_topic" : "rpimon/openmower/ap_strength_001122334455",
     "force_update" : true,
