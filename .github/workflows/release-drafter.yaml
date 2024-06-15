@@ -6,6 +6,13 @@ on:  # yamllint disable-line rule:truthy
     - main
   workflow_dispatch:
 
+permissions:
+  # write permission is required to create a github release
+  contents: write
+  # write permission is required for autolabeler
+  # otherwise, read permission is required at least
+  pull-requests: read
+
 jobs:
   update_release_draft:
     runs-on: ubuntu-latest
