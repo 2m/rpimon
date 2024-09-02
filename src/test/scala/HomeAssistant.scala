@@ -17,7 +17,6 @@
 package rpimon
 
 class HomeAssistantSuite extends munit.FunSuite with SnapshotAssertions with Util:
-  import Config.*
   import Dbus.*
   import HomeAssistant.*
   import Stats.*
