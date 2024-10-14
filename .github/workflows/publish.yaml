@@ -13,6 +13,9 @@ on:
     - opened
     - synchronize
 
+env:
+  JAVA_OPTS: -Xms2048M -Xmx2048M -Xss6M -XX:ReservedCodeCacheSize=256M -Dfile.encoding=UTF-8
+
 jobs:
   publish:
     permissions:
@@ -46,6 +49,7 @@ jobs:
         distribution: temurin
         java-version: 21
         cache: sbt
+    - uses: sbt/setup-sbt@v1
 
     - run: just jar-build
 
