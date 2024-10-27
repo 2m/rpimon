@@ -1,4 +1,4 @@
-scalaVersion := "3.5.1"
+scalaVersion := "3.5.2"
 scalafmtOnCompile := true
 
 libraryDependencies ++= Seq(
@@ -13,7 +13,7 @@ libraryDependencies ++= Seq(
   "org.scalameta"          %% "munit"             % "1.0.2" % Test,
   "org.typelevel"          %% "munit-cats-effect" % "2.0.0" % Test,
   "com.softwaremill.diffx" %% "diffx-munit"       % "0.9.0" % Test,
-  compilerPlugin("com.github.ghik" % "zerowaste" % "0.2.25" cross CrossVersion.full)
+  compilerPlugin("com.github.ghik" % "zerowaste" % "0.2.26" cross CrossVersion.full)
 )
 
 Compile / run / fork := true
