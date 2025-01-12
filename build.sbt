@@ -10,7 +10,7 @@ libraryDependencies ++= Seq(
   "net.sigusr"             %% "fs2-mqtt"          % "1.0.1",
   "is.cir"                 %% "ciris"             % "3.7.0",
   "org.legogroup"          %% "woof-core"         % "0.7.0",
-  "org.scalameta"          %% "munit"             % "1.0.3" % Test,
+  "org.scalameta"          %% "munit"             % "1.0.4" % Test,
   "org.typelevel"          %% "munit-cats-effect" % "2.0.0" % Test,
   "com.softwaremill.diffx" %% "diffx-munit"       % "0.9.0" % Test,
   compilerPlugin("com.github.ghik" % "zerowaste" % "0.2.28" cross CrossVersion.full)
