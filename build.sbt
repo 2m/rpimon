@@ -13,7 +13,7 @@ libraryDependencies ++= Seq(
   "org.scalameta"          %% "munit"             % "1.0.4" % Test,
   "org.typelevel"          %% "munit-cats-effect" % "2.0.0" % Test,
   "com.softwaremill.diffx" %% "diffx-munit"       % "0.9.0" % Test,
-  compilerPlugin("com.github.ghik" % "zerowaste" % "0.2.29" cross CrossVersion.full)
+  compilerPlugin("com.github.ghik" % "zerowaste" % "1.0.0" cross CrossVersion.full)
 )
 
 Compile / run / fork := true
