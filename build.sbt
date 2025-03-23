@@ -3,8 +3,8 @@ scalafmtOnCompile := true
 
 libraryDependencies ++= Seq(
   "co.fs2"                 %% "fs2-io"            % "3.11.0",
-  "io.circe"               %% "circe-core"        % "0.14.10",
-  "io.circe"               %% "circe-parser"      % "0.14.10",
+  "io.circe"               %% "circe-core"        % "0.14.12",
+  "io.circe"               %% "circe-parser"      % "0.14.12",
   "io.github.kitlangton"   %% "neotype"           % "0.3.17",
   "io.github.kitlangton"   %% "neotype-circe"     % "0.3.17",
   "net.sigusr"             %% "fs2-mqtt"          % "1.0.1",
