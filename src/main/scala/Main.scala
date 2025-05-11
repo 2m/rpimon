@@ -49,7 +49,7 @@ object RpiMon extends IOApp:
     case _         => Sync[F].pure(())
   }
 
-  def streams[F[_]: Processes: Logger: Console: Network: Async: Proc: FileSystem]()(using conf: Config) =
+  def streams[F[_]: Logger: Console: Network: Async: Proc: FileSystem]()(using conf: Config) =
     val transportConfig = TransportConfig[F](conf.mqttHost.unwrap, conf.mqttPort.unwrap)
     val sessionConfig = SessionConfig("rpimon")
 

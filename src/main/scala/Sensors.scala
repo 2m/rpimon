@@ -16,8 +16,6 @@
 
 package rpimon
 
-import scala.util.chaining.*
-
 import neotype.*
 
 trait Sensors[T]:

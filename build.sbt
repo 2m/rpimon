@@ -1,4 +1,4 @@
-scalaVersion := "3.6.4"
+scalaVersion := "3.7.0"
 scalafmtOnCompile := true
 
 libraryDependencies ++= Seq(
