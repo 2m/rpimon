@@ -42,7 +42,7 @@ object RpiMon extends IOApp:
     Stream.sleep[F](conf.tick.unwrap).repeat
 
   private def onConnectionState[F[_]: Sync: Logger]: ConnectionState => F[Unit] = {
-    case Error(e) => Sync[F].raiseError(e)
+    case Error(e)                            => Sync[F].raiseError(e)
     case Connecting(nextDelay, retriesSoFar) =>
       Logger[F].info(s"Connecting to MQTT broker, next delay: ${nextDelay.toCoarsest}, retries so far: $retriesSoFar")
     case Connected => Logger[F].info("Connected to MQTT broker")
