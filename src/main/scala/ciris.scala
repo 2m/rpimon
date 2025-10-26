@@ -35,7 +35,7 @@ given ConfigDecoder[String, Port] =
 
 given ConfigDecoder[String, Map[String, String]] =
   ConfigDecoder[String, String].mapEither:
-    case (_, "") => Right(Map.empty)
+    case (_, "")    => Right(Map.empty)
     case (_, input) =>
       input
         .split(",")
