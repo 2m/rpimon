@@ -2,7 +2,7 @@ scalaVersion := "3.7.4"
 scalafmtOnCompile := true
 
 libraryDependencies ++= Seq(
-  "co.fs2"                 %% "fs2-io"            % "3.12.2",
+  "co.fs2"                 %% "fs2-io"            % "3.13.0",
   "io.circe"               %% "circe-core"        % "0.14.15",
   "io.circe"               %% "circe-parser"      % "0.14.15",
   "io.github.kitlangton"   %% "neotype"           % "0.4.10",
