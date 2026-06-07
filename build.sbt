@@ -8,7 +8,7 @@ libraryDependencies ++= Seq(
   "io.github.kitlangton"   %% "neotype"           % "0.5.0",
   "io.github.kitlangton"   %% "neotype-circe"     % "0.5.0",
   "net.sigusr"             %% "fs2-mqtt"          % "1.0.1",
-  "is.cir"                 %% "ciris"             % "3.14.1",
+  "is.cir"                 %% "ciris"             % "3.15.0",
   "org.legogroup"          %% "woof-core"         % "0.8.1",
   "org.scalameta"          %% "munit"             % "1.3.1" % Test,
   "org.typelevel"          %% "munit-cats-effect" % "2.2.0" % Test,
